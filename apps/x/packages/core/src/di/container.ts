@@ -11,6 +11,8 @@ import { IAgentRuntime, AgentRuntime } from "../agents/runtime.js";
 import { FSOAuthRepo, IOAuthRepo } from "../auth/repo.js";
 import { FSClientRegistrationRepo, IClientRegistrationRepo } from "../auth/client-repo.js";
 import { FSGranolaConfigRepo, IGranolaConfigRepo } from "../knowledge/granola/repo.js";
+import { FSAppleMailConfigRepo, IAppleMailConfigRepo } from "../knowledge/apple_mail/repo.js";
+import { FSAppleCalendarConfigRepo, IAppleCalendarConfigRepo } from "../knowledge/apple_calendar/repo.js";
 import { IAbortRegistry, InMemoryAbortRegistry } from "../runs/abort-registry.js";
 import { FSAgentScheduleRepo, IAgentScheduleRepo } from "../agent-schedule/repo.js";
 import { FSAgentScheduleStateRepo, IAgentScheduleStateRepo } from "../agent-schedule/state-repo.js";
@@ -35,6 +37,8 @@ container.register({
     oauthRepo: asClass<IOAuthRepo>(FSOAuthRepo).singleton(),
     clientRegistrationRepo: asClass<IClientRegistrationRepo>(FSClientRegistrationRepo).singleton(),
     granolaConfigRepo: asClass<IGranolaConfigRepo>(FSGranolaConfigRepo).singleton(),
+    appleMailConfigRepo: asClass<IAppleMailConfigRepo>(FSAppleMailConfigRepo).singleton(),
+    appleCalendarConfigRepo: asClass<IAppleCalendarConfigRepo>(FSAppleCalendarConfigRepo).singleton(),
     agentScheduleRepo: asClass<IAgentScheduleRepo>(FSAgentScheduleRepo).singleton(),
     agentScheduleStateRepo: asClass<IAgentScheduleStateRepo>(FSAgentScheduleStateRepo).singleton(),
 });

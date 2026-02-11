@@ -5,6 +5,8 @@ import Database from 'better-sqlite3';
 import { WorkDir } from '../config/config.js';
 import { serviceLogger, type ServiceRunContext } from '../services/service_logger.js';
 import { limitEventItems } from './limit_event_items.js';
+import container from '../di/container.js';
+import { IAppleMailConfigRepo } from './apple_mail/repo.js';
 
 /**
  * macOS Mail Sync Module
@@ -256,6 +258,19 @@ function messageToMarkdown(message: EmailMessage): string {
 async function performSync(): Promise<void> {
     if (!isMacOS()) {
         console.log('[Apple Mail] Skipping sync - not running on macOS');
+        return;
+    }
+
+    // Check if enabled
+    try {
+        const repo = container.resolve<IAppleMailConfigRepo>('appleMailConfigRepo');
+        const config = await repo.getConfig();
+        if (!config.enabled) {
+            console.log('[Apple Mail] Sync disabled in config');
+            return;
+        }
+    } catch (error) {
+        console.log('[Apple Mail] Error checking config:', error);
         return;
     }
 

@@ -5,6 +5,8 @@ import Database from 'better-sqlite3';
 import { WorkDir } from '../config/config.js';
 import { serviceLogger, type ServiceRunContext } from '../services/service_logger.js';
 import { limitEventItems } from './limit_event_items.js';
+import container from '../di/container.js';
+import { IAppleCalendarConfigRepo } from './apple_calendar/repo.js';
 
 /**
  * macOS Calendar Sync Module
@@ -285,6 +287,19 @@ function cleanUpOldFiles(currentEventIds: Set<string>, syncDir: string): string[
 async function performSync(): Promise<void> {
     if (!isMacOS()) {
         console.log('[Apple Calendar] Skipping sync - not running on macOS');
+        return;
+    }
+
+    // Check if enabled
+    try {
+        const repo = container.resolve<IAppleCalendarConfigRepo>('appleCalendarConfigRepo');
+        const config = await repo.getConfig();
+        if (!config.enabled) {
+            console.log('[Apple Calendar] Sync disabled in config');
+            return;
+        }
+    } catch (error) {
+        console.log('[Apple Calendar] Error checking config:', error);
         return;
     }
 
