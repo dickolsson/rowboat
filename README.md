@@ -81,6 +81,8 @@ Under the hood, Rowboat maintains an **Obsidian-compatible vault** of plain Mark
 
 Rowboat builds memory from the work you already do, including:
 - **Gmail** (email)
+- **Apple Mail** (macOS native email, local-only)
+- **Apple Calendar** (macOS native calendar, local-only)
 - **Granola** (meeting notes)
 - **Fireflies** (meeting notes)
 

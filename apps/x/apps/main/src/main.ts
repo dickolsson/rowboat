@@ -16,6 +16,8 @@ import { init as initGmailSync } from "@x/core/dist/knowledge/sync_gmail.js";
 import { init as initCalendarSync } from "@x/core/dist/knowledge/sync_calendar.js";
 import { init as initFirefliesSync } from "@x/core/dist/knowledge/sync_fireflies.js";
 import { init as initGranolaSync } from "@x/core/dist/knowledge/granola/sync.js";
+import { init as initAppleMailSync } from "@x/core/dist/knowledge/sync_apple_mail.js";
+import { init as initAppleCalendarSync } from "@x/core/dist/knowledge/sync_apple_calendar.js";
 import { init as initGraphBuilder } from "@x/core/dist/knowledge/build_graph.js";
 import { init as initPreBuiltRunner } from "@x/core/dist/pre_built/runner.js";
 import { init as initAgentRunner } from "@x/core/dist/agent-schedule/runner.js";
@@ -167,6 +169,12 @@ app.whenReady().then(async () => {
 
   // start granola sync
   initGranolaSync();
+
+  // start Apple Mail sync (macOS only)
+  if (process.platform === 'darwin') {
+    initAppleMailSync();
+    initAppleCalendarSync();
+  }
 
   // start knowledge graph builder
   initGraphBuilder();
