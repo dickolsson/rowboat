@@ -305,14 +305,17 @@ async function performSync(): Promise<void> {
 
     console.log('[Apple Calendar] Starting sync...');
 
-    let run: ServiceRunContext | null = null;
+    let runId: string | null = null;
+    let runStartedAt = 0;
     const ensureRun = async () => {
-        if (!run) {
-            run = await serviceLogger.startRun({
+        if (!runId) {
+            const run = await serviceLogger.startRun({
                 service: 'apple_calendar',
                 message: 'Syncing Apple Calendar',
                 trigger: 'timer',
             });
+            runId = run.runId;
+            runStartedAt = run.startedAt;
         }
     };
 
@@ -397,8 +400,8 @@ async function performSync(): Promise<void> {
 
                 await serviceLogger.log({
                     type: 'changes_identified',
-                    service: run!.service,
-                    runId: run!.runId,
+                    service: 'apple_calendar',
+                    runId: runId!,
                     level: 'info',
                     message: `Calendar updates: ${totalChanges} change${totalChanges === 1 ? '' : 's'}`,
                     counts: {
@@ -412,11 +415,11 @@ async function performSync(): Promise<void> {
 
                 await serviceLogger.log({
                     type: 'run_complete',
-                    service: run!.service,
-                    runId: run!.runId,
+                    service: 'apple_calendar',
+                    runId: runId!,
                     level: 'info',
                     message: `Apple Calendar sync complete: ${totalChanges} change${totalChanges === 1 ? '' : 's'}`,
-                    durationMs: Date.now() - run!.startedAt,
+                    durationMs: Date.now() - runStartedAt,
                     outcome: 'ok',
                     summary: {
                         newEvents: newCount,
@@ -441,22 +444,22 @@ async function performSync(): Promise<void> {
 
     } catch (error) {
         console.error('[Apple Calendar] Error during sync:', error);
-        if (run) {
+        if (runId) {
             await serviceLogger.log({
                 type: 'error',
-                service: run.service,
-                runId: run.runId,
+                service: 'apple_calendar',
+                runId,
                 level: 'error',
                 message: 'Apple Calendar sync error',
                 error: error instanceof Error ? error.message : String(error),
             });
             await serviceLogger.log({
                 type: 'run_complete',
-                service: run.service,
-                runId: run.runId,
+                service: 'apple_calendar',
+                runId,
                 level: 'error',
                 message: 'Apple Calendar sync failed',
-                durationMs: Date.now() - run.startedAt,
+                durationMs: Date.now() - runStartedAt,
                 outcome: 'error',
             });
         }

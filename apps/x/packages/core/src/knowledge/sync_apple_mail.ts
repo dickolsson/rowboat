@@ -13,7 +13,7 @@ import { IAppleMailConfigRepo } from './apple_mail/repo.js';
  * 
  * Reads email data from the local macOS Mail SQLite database and syncs it to markdown files.
  * 
- * Database location: ~/Library/Mail/V*/MailData/Envelope Index
+ * Database location: ~/Library/Mail/V{version}/MailData/Envelope Index
  * 
  * IMPORTANT PRIVACY NOTE:
  * - macOS Sequoia+ may require "Full Disk Access" permission to read from ~/Library/Mail
@@ -276,14 +276,17 @@ async function performSync(): Promise<void> {
 
     console.log('[Apple Mail] Starting sync...');
 
-    let run: ServiceRunContext | null = null;
+    let runId: string | null = null;
+    let runStartedAt = 0;
     const ensureRun = async () => {
-        if (!run) {
-            run = await serviceLogger.startRun({
+        if (!runId) {
+            const run = await serviceLogger.startRun({
                 service: 'apple_mail',
                 message: 'Syncing Apple Mail',
                 trigger: 'timer',
             });
+            runId = run.runId;
+            runStartedAt = run.startedAt;
         }
     };
 
@@ -347,12 +350,12 @@ async function performSync(): Promise<void> {
             state.lastSyncDate = new Date().toISOString();
             saveState(state);
 
-            if (run) {
+            if (runId) {
                 const limitedTitles = limitEventItems(messageTitles);
                 await serviceLogger.log({
                     type: 'changes_identified',
-                    service: run.service,
-                    runId: run.runId,
+                    service: 'apple_mail',
+                    runId,
                     level: 'info',
                     message: `Found ${syncedCount} new message${syncedCount === 1 ? '' : 's'}`,
                     counts: { messages: syncedCount },
@@ -362,11 +365,11 @@ async function performSync(): Promise<void> {
 
                 await serviceLogger.log({
                     type: 'run_complete',
-                    service: run.service,
-                    runId: run.runId,
+                    service: 'apple_mail',
+                    runId,
                     level: 'info',
                     message: `Apple Mail sync complete: ${syncedCount} message${syncedCount === 1 ? '' : 's'}`,
-                    durationMs: Date.now() - run.startedAt,
+                    durationMs: Date.now() - runStartedAt,
                     outcome: 'ok',
                     summary: { messages: syncedCount },
                 });
@@ -380,22 +383,22 @@ async function performSync(): Promise<void> {
 
     } catch (error) {
         console.error('[Apple Mail] Error during sync:', error);
-        if (run) {
+        if (runId) {
             await serviceLogger.log({
                 type: 'error',
-                service: run.service,
-                runId: run.runId,
+                service: 'apple_mail',
+                runId,
                 level: 'error',
                 message: 'Apple Mail sync error',
                 error: error instanceof Error ? error.message : String(error),
             });
             await serviceLogger.log({
                 type: 'run_complete',
-                service: run.service,
-                runId: run.runId,
+                service: 'apple_mail',
+                runId,
                 level: 'error',
                 message: 'Apple Mail sync failed',
-                durationMs: Date.now() - run.startedAt,
+                durationMs: Date.now() - runStartedAt,
                 outcome: 'error',
             });
         }
