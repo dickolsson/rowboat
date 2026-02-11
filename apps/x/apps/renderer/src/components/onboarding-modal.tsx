@@ -79,6 +79,14 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   const [granolaEnabled, setGranolaEnabled] = useState(false)
   const [granolaLoading, setGranolaLoading] = useState(true)
 
+  // Apple Mail state
+  const [appleMailEnabled, setAppleMailEnabled] = useState(false)
+  const [appleMailLoading, setAppleMailLoading] = useState(true)
+
+  // Apple Calendar state
+  const [appleCalendarEnabled, setAppleCalendarEnabled] = useState(false)
+  const [appleCalendarLoading, setAppleCalendarLoading] = useState(true)
+
   // Composio/Slack state
   const [composioApiKeyOpen, setComposioApiKeyOpen] = useState(false)
   const [slackConnected, setSlackConnected] = useState(false)
@@ -210,6 +218,64 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     }
   }, [])
 
+  // Load Apple Mail config
+  const refreshAppleMailConfig = useCallback(async () => {
+    try {
+      setAppleMailLoading(true)
+      const result = await window.ipc.invoke('apple-mail:getConfig', null)
+      setAppleMailEnabled(result.enabled)
+    } catch (error) {
+      console.error('Failed to load Apple Mail config:', error)
+      setAppleMailEnabled(false)
+    } finally {
+      setAppleMailLoading(false)
+    }
+  }, [])
+
+  // Update Apple Mail config
+  const handleAppleMailToggle = useCallback(async (enabled: boolean) => {
+    try {
+      setAppleMailLoading(true)
+      await window.ipc.invoke('apple-mail:setConfig', { enabled })
+      setAppleMailEnabled(enabled)
+      toast.success(enabled ? 'Apple Mail sync enabled' : 'Apple Mail sync disabled')
+    } catch (error) {
+      console.error('Failed to update Apple Mail config:', error)
+      toast.error('Failed to update Apple Mail sync settings')
+    } finally {
+      setAppleMailLoading(false)
+    }
+  }, [])
+
+  // Load Apple Calendar config
+  const refreshAppleCalendarConfig = useCallback(async () => {
+    try {
+      setAppleCalendarLoading(true)
+      const result = await window.ipc.invoke('apple-calendar:getConfig', null)
+      setAppleCalendarEnabled(result.enabled)
+    } catch (error) {
+      console.error('Failed to load Apple Calendar config:', error)
+      setAppleCalendarEnabled(false)
+    } finally {
+      setAppleCalendarLoading(false)
+    }
+  }, [])
+
+  // Update Apple Calendar config
+  const handleAppleCalendarToggle = useCallback(async (enabled: boolean) => {
+    try {
+      setAppleCalendarLoading(true)
+      await window.ipc.invoke('apple-calendar:setConfig', { enabled })
+      setAppleCalendarEnabled(enabled)
+      toast.success(enabled ? 'Apple Calendar sync enabled' : 'Apple Calendar sync disabled')
+    } catch (error) {
+      console.error('Failed to update Apple Calendar config:', error)
+      toast.error('Failed to update Apple Calendar sync settings')
+    } finally {
+      setAppleCalendarLoading(false)
+    }
+  }, [])
+
   // Load Slack connection status
   const refreshSlackStatus = useCallback(async () => {
     try {
@@ -315,6 +381,10 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     // Refresh Granola
     refreshGranolaConfig()
 
+    // Refresh Apple Mail and Calendar
+    refreshAppleMailConfig()
+    refreshAppleCalendarConfig()
+
     // Refresh Slack status
     refreshSlackStatus()
 
@@ -344,7 +414,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     )
 
     setProviderStates(newStates)
-  }, [providers, refreshGranolaConfig, refreshSlackStatus])
+  }, [providers, refreshGranolaConfig, refreshAppleMailConfig, refreshAppleCalendarConfig, refreshSlackStatus])
 
   // Refresh statuses when modal opens or providers list changes
   useEffect(() => {
@@ -535,6 +605,60 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
           checked={granolaEnabled}
           onCheckedChange={handleGranolaToggle}
           disabled={granolaLoading}
+        />
+      </div>
+    </div>
+  )
+
+  // Render Apple Mail row
+  const renderAppleMailRow = () => (
+    <div className="flex items-center justify-between gap-3 rounded-md px-3 py-3 hover:bg-accent">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex size-10 items-center justify-center rounded-md bg-muted">
+          <Mail className="size-5" />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-medium truncate">Apple Mail</span>
+          <span className="text-xs text-muted-foreground truncate">
+            macOS native email (local-only)
+          </span>
+        </div>
+      </div>
+      <div className="shrink-0 flex items-center gap-2">
+        {appleMailLoading && (
+          <Loader2 className="size-3 animate-spin" />
+        )}
+        <Switch
+          checked={appleMailEnabled}
+          onCheckedChange={handleAppleMailToggle}
+          disabled={appleMailLoading}
+        />
+      </div>
+    </div>
+  )
+
+  // Render Apple Calendar row
+  const renderAppleCalendarRow = () => (
+    <div className="flex items-center justify-between gap-3 rounded-md px-3 py-3 hover:bg-accent">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex size-10 items-center justify-center rounded-md bg-muted">
+          <Mail className="size-5" />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-medium truncate">Apple Calendar</span>
+          <span className="text-xs text-muted-foreground truncate">
+            macOS native calendar (local-only)
+          </span>
+        </div>
+      </div>
+      <div className="shrink-0 flex items-center gap-2">
+        {appleCalendarLoading && (
+          <Loader2 className="size-3 animate-spin" />
+        )}
+        <Switch
+          checked={appleCalendarEnabled}
+          onCheckedChange={handleAppleCalendarToggle}
+          disabled={appleCalendarLoading}
         />
       </div>
     </div>
@@ -745,59 +869,75 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   }
 
   // Step 1: Connect Accounts
-  const AccountConnectionStep = () => (
-    <div className="flex flex-col">
-      <DialogHeader className="text-center mb-6">
-        <DialogTitle className="text-2xl">Connect Your Accounts</DialogTitle>
-        <DialogDescription className="text-base">
-          Connect your accounts to start syncing your data locally. You can always add more later.
-        </DialogDescription>
-      </DialogHeader>
+  const AccountConnectionStep = () => {
+    // Check if running on macOS for Apple integrations
+    const isMacOS = navigator.userAgent.includes('Mac')
 
-      <div className="space-y-4">
-        {providersLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <>
-            {/* Email & Calendar Section */}
-            {providers.includes('google') && (
+    return (
+      <div className="flex flex-col">
+        <DialogHeader className="text-center mb-6">
+          <DialogTitle className="text-2xl">Connect Your Accounts</DialogTitle>
+          <DialogDescription className="text-base">
+            Connect your accounts to start syncing your data locally. You can always add more later.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {providersLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <>
+              {/* Email & Calendar Section */}
+              {providers.includes('google') && (
+                <div className="space-y-2">
+                  <div className="px-3">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email & Calendar</span>
+                  </div>
+                  {renderOAuthProvider('google', 'Google', <Mail className="size-5" />, 'Sync emails and calendar events')}
+                </div>
+              )}
+
+              {/* Local Sources (macOS) */}
+              {isMacOS && (
+                <div className="space-y-2">
+                  <div className="px-3">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Local Sources (macOS)</span>
+                  </div>
+                  {renderAppleMailRow()}
+                  {renderAppleCalendarRow()}
+                </div>
+              )}
+
+              {/* Meeting Notes Section */}
               <div className="space-y-2">
                 <div className="px-3">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email & Calendar</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Meeting Notes</span>
                 </div>
-                {renderOAuthProvider('google', 'Google', <Mail className="size-5" />, 'Sync emails and calendar events')}
+                {renderGranolaRow()}
+                {providers.includes('fireflies-ai') && renderOAuthProvider('fireflies-ai', 'Fireflies', <Mic className="size-5" />, 'AI meeting transcripts')}
               </div>
-            )}
 
-            {/* Meeting Notes Section */}
-            <div className="space-y-2">
-              <div className="px-3">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Meeting Notes</span>
-              </div>
-              {renderGranolaRow()}
-              {providers.includes('fireflies-ai') && renderOAuthProvider('fireflies-ai', 'Fireflies', <Mic className="size-5" />, 'AI meeting transcripts')}
-            </div>
+            </>
+          )}
+        </div>
 
-          </>
-        )}
+        <div className="flex flex-col gap-3 mt-8">
+          <Button onClick={handleNext} size="lg">
+            Continue
+          </Button>
+          <Button variant="ghost" onClick={handleNext} className="text-muted-foreground">
+            Skip for now
+          </Button>
+        </div>
       </div>
-
-      <div className="flex flex-col gap-3 mt-8">
-        <Button onClick={handleNext} size="lg">
-          Continue
-        </Button>
-        <Button variant="ghost" onClick={handleNext} className="text-muted-foreground">
-          Skip for now
-        </Button>
-      </div>
-    </div>
-  )
+    )
+  }
 
   // Step 2: Completion
   const CompletionStep = () => {
-    const hasConnections = connectedProviders.length > 0 || granolaEnabled || slackConnected
+    const hasConnections = connectedProviders.length > 0 || granolaEnabled || appleMailEnabled || appleCalendarEnabled || slackConnected
 
     return (
       <div className="flex flex-col items-center text-center">
@@ -830,6 +970,18 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="size-4 text-green-600" />
                     <span>Fireflies (Meeting transcripts)</span>
+                  </div>
+                )}
+                {appleMailEnabled && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="size-4 text-green-600" />
+                    <span>Apple Mail (Local email)</span>
+                  </div>
+                )}
+                {appleCalendarEnabled && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="size-4 text-green-600" />
+                    <span>Apple Calendar (Local calendar)</span>
                   </div>
                 )}
                 {granolaEnabled && (

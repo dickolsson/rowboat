@@ -269,6 +269,34 @@ const ipcSchemas = {
       success: z.literal(true),
     }),
   },
+  'apple-mail:getConfig': {
+    req: z.null(),
+    res: z.object({
+      enabled: z.boolean(),
+    }),
+  },
+  'apple-mail:setConfig': {
+    req: z.object({
+      enabled: z.boolean(),
+    }),
+    res: z.object({
+      success: z.literal(true),
+    }),
+  },
+  'apple-calendar:getConfig': {
+    req: z.null(),
+    res: z.object({
+      enabled: z.boolean(),
+    }),
+  },
+  'apple-calendar:setConfig': {
+    req: z.object({
+      enabled: z.boolean(),
+    }),
+    res: z.object({
+      success: z.literal(true),
+    }),
+  },
   'onboarding:getStatus': {
     req: z.null(),
     res: z.object({

@@ -1,0 +1,220 @@
+---
+title: "Integrations"
+description: "Connect your data sources to build a comprehensive knowledge graph"
+icon: "plug"
+---
+
+## Overview
+
+Rowboat builds your knowledge graph from the work you already do by integrating with your existing tools and data sources. All synced data is processed locally and stored in an Obsidian-compatible vault as plain Markdown files.
+
+---
+
+## Available Integrations
+
+### Email Integrations
+
+<AccordionGroup>
+  <Accordion title="Gmail" icon="google">
+    **Platform:** All platforms
+    
+    **What it syncs:** 
+    - Email threads from the last 30 days
+    - Email attachments
+    
+    **Setup:** Requires Google OAuth. See [Google Setup Guide](https://github.com/rowboatlabs/rowboat/blob/main/google-setup.md)
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/gmail_sync/`
+  </Accordion>
+
+  <Accordion title="Apple Mail (macOS only)" icon="apple">
+    **Platform:** macOS only
+    
+    **What it syncs:** 
+    - Email messages from the last 30 days
+    - Reads directly from local Mail.app database
+    
+    **Setup:** Toggle in onboarding + Full Disk Access permission (macOS Sequoia+). See [Apple Setup Guide](https://github.com/rowboatlabs/rowboat/blob/main/apple-setup.md)
+    
+    **Privacy:** 100% local, no cloud API access
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/apple_mail_sync/`
+    
+    <Note>Attachments are not yet supported for Apple Mail integration.</Note>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Calendar Integrations
+
+<AccordionGroup>
+  <Accordion title="Google Calendar" icon="google">
+    **Platform:** All platforms
+    
+    **What it syncs:** 
+    - Calendar events (14 days past to 14 days future)
+    - Attached Google Docs notes
+    
+    **Setup:** Requires Google OAuth. See [Google Setup Guide](https://github.com/rowboatlabs/rowboat/blob/main/google-setup.md)
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/calendar_sync/`
+  </Accordion>
+
+  <Accordion title="Apple Calendar (macOS only)" icon="apple">
+    **Platform:** macOS only
+    
+    **What it syncs:** 
+    - Calendar events (14 days past to 14 days future)
+    - Reads directly from local Calendar.app database
+    
+    **Setup:** Toggle in onboarding + Full Disk Access permission (macOS Sequoia+). See [Apple Setup Guide](https://github.com/rowboatlabs/rowboat/blob/main/apple-setup.md)
+    
+    **Privacy:** 100% local, no cloud API access
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/apple_calendar_sync/`
+    
+    **Cleanup:** Automatically removes events outside the sync window
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Meeting Notes Integrations
+
+<AccordionGroup>
+  <Accordion title="Granola" icon="microphone">
+    **Platform:** macOS (requires Granola app installed)
+    
+    **What it syncs:** 
+    - Meeting notes and transcripts from Granola
+    - ProseMirror formatted documents
+    
+    **Setup:** Toggle in onboarding. Requires Granola app to be installed and authenticated.
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/granola_notes/`
+  </Accordion>
+
+  <Accordion title="Fireflies" icon="fire">
+    **Platform:** All platforms
+    
+    **What it syncs:** 
+    - Meeting transcripts and summaries
+    - Via Composio integration
+    
+    **Setup:** OAuth connection via onboarding
+    
+    **Sync frequency:** Every 5 minutes
+    
+    **Storage location:** `~/.rowboat/fireflies_transcripts/`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## How Syncing Works
+
+1. **Background Process:** Each integration runs as a background service that checks for updates every 5 minutes
+2. **Local Storage:** Synced data is written to `~/.rowboat/` as markdown or JSON files
+3. **Knowledge Graph:** The graph builder monitors these folders and processes new/changed files into knowledge notes
+4. **Entity Extraction:** AI extracts entities (people, organizations, projects, topics) from synced content
+5. **Note Creation:** Entities are compiled into Obsidian-compatible notes with backlinks
+
+---
+
+## Data Privacy
+
+<Info>
+  All integrations are designed with privacy in mind:
+  - **Local processing:** Data is processed on your machine, not sent to Rowboat servers
+  - **OAuth security:** Cloud integrations use industry-standard OAuth 2.0
+  - **Apple integrations:** 100% local, read-only database access with no cloud API calls
+  - **Transparent storage:** All synced data is stored as plain text files you can inspect
+</Info>
+
+---
+
+## Platform-Specific Features
+
+### macOS Only
+
+- **Apple Mail:** Native Mail.app integration
+- **Apple Calendar:** Native Calendar.app integration
+- **Granola:** Requires Granola app (macOS only)
+
+### All Platforms
+
+- **Gmail:** Cross-platform via Google API
+- **Google Calendar:** Cross-platform via Google API
+- **Fireflies:** Cross-platform via Composio
+
+---
+
+## Managing Integrations
+
+### During Onboarding
+
+All integrations can be enabled during the initial onboarding flow:
+1. Launch Rowboat
+2. Complete LLM setup (Step 1)
+3. Enable desired integrations (Step 2)
+4. Complete setup
+
+### After Onboarding
+
+To manage integrations after initial setup:
+1. Re-run the onboarding flow from settings
+2. Toggle integrations on/off as needed
+3. Changes take effect immediately
+
+---
+
+## Troubleshooting
+
+### Google Integrations
+
+**"Missing required scopes"**
+- Ensure you've enabled all required APIs in Google Cloud Console
+- Re-authenticate with Rowboat
+
+**"401 Unauthorized"**
+- Your OAuth token may have expired
+- Re-authenticate through the onboarding flow
+
+### Apple Integrations (macOS)
+
+**"Database not found"**
+- Ensure Mail.app or Calendar.app is installed and configured
+- Check that database files exist in `~/Library/`
+
+**"Permission denied"**
+- Grant "Full Disk Access" permission in System Settings → Privacy & Security
+- Restart Rowboat after granting permission
+
+**"Database is locked"**
+- Mail.app or Calendar.app currently has the database open
+- Rowboat will automatically retry on the next sync cycle
+
+### General
+
+**"No new data syncing"**
+- Check sync status in the services log
+- Verify the integration is still enabled
+- Check that source applications have new data to sync
+
+---
+
+## Future Integrations
+
+Have a suggestion for a new integration? Join our [Discord community](https://discord.gg/rxB8pzHxaS) or open an issue on [GitHub](https://github.com/rowboatlabs/rowboat).
+

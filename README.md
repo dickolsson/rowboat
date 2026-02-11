@@ -59,6 +59,9 @@ Download latest for Mac/Windows/Linux: [Download](https://www.rowboatlabs.com/do
 ### Google setup
 To connect Google services (Gmail, Calendar, and Drive), follow [Google setup](https://github.com/rowboatlabs/rowboat/blob/main/google-setup.md).
 
+### Apple Mail & Calendar setup (macOS only)
+To enable native Apple Mail and Calendar syncing on macOS, follow [Apple setup](https://github.com/rowboatlabs/rowboat/blob/main/apple-setup.md).
+
 ### Voice notes
 To enable voice notes (optional), add a Deepgram API key in ~/.rowboat/config/deepgram.json:
 ```
@@ -81,6 +84,8 @@ Under the hood, Rowboat maintains an **Obsidian-compatible vault** of plain Mark
 
 Rowboat builds memory from the work you already do, including:
 - **Gmail** (email)
+- **Apple Mail** (macOS native email, local-only)
+- **Apple Calendar** (macOS native calendar, local-only)
 - **Granola** (meeting notes)
 - **Fireflies** (meeting notes)
 

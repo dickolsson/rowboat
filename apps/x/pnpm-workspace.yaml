@@ -2,6 +2,9 @@ packages:
   - apps/*
   - packages/*
 
+ignoredBuiltDependencies:
+  - better-sqlite3
+
 onlyBuiltDependencies:
   - core-js
   - electron

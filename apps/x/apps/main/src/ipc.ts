@@ -25,7 +25,11 @@ import { listOnboardingModels } from '@x/core/dist/models/models-dev.js';
 import { testModelConnection } from '@x/core/dist/models/models.js';
 import type { IModelConfigRepo } from '@x/core/dist/models/repo.js';
 import { IGranolaConfigRepo } from '@x/core/dist/knowledge/granola/repo.js';
+import { IAppleMailConfigRepo } from '@x/core/dist/knowledge/apple_mail/repo.js';
+import { IAppleCalendarConfigRepo } from '@x/core/dist/knowledge/apple_calendar/repo.js';
 import { triggerSync as triggerGranolaSync } from '@x/core/dist/knowledge/granola/sync.js';
+import { triggerSync as triggerAppleMailSync } from '@x/core/dist/knowledge/sync_apple_mail.js';
+import { triggerSync as triggerAppleCalendarSync } from '@x/core/dist/knowledge/sync_apple_calendar.js';
 import { isOnboardingComplete, markOnboardingComplete } from '@x/core/dist/config/note_creation_config.js';
 import * as composioHandler from './composio-handler.js';
 import { IAgentScheduleRepo } from '@x/core/dist/agent-schedule/repo.js';
@@ -386,6 +390,38 @@ export function setupIpcHandlers() {
       // Trigger sync immediately when enabled
       if (args.enabled) {
         triggerGranolaSync();
+      }
+
+      return { success: true };
+    },
+    'apple-mail:getConfig': async () => {
+      const repo = container.resolve<IAppleMailConfigRepo>('appleMailConfigRepo');
+      const config = await repo.getConfig();
+      return { enabled: config.enabled };
+    },
+    'apple-mail:setConfig': async (_event, args) => {
+      const repo = container.resolve<IAppleMailConfigRepo>('appleMailConfigRepo');
+      await repo.setConfig({ enabled: args.enabled });
+
+      // Trigger sync immediately when enabled
+      if (args.enabled) {
+        triggerAppleMailSync();
+      }
+
+      return { success: true };
+    },
+    'apple-calendar:getConfig': async () => {
+      const repo = container.resolve<IAppleCalendarConfigRepo>('appleCalendarConfigRepo');
+      const config = await repo.getConfig();
+      return { enabled: config.enabled };
+    },
+    'apple-calendar:setConfig': async (_event, args) => {
+      const repo = container.resolve<IAppleCalendarConfigRepo>('appleCalendarConfigRepo');
+      await repo.setConfig({ enabled: args.enabled });
+
+      // Trigger sync immediately when enabled
+      if (args.enabled) {
+        triggerAppleCalendarSync();
       }
 
       return { success: true };

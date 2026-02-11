@@ -30,6 +30,8 @@ const SOURCE_FOLDERS = [
     'gmail_sync',
     'fireflies_transcripts',
     'granola_notes',
+    'apple_mail_sync',
+    'apple_calendar_sync',
 ];
 
 // Voice memos are now created directly in knowledge/Voice Memos/<date>/
